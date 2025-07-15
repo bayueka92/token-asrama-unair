@@ -1,0 +1,128 @@
+import { User, TokenPrice, Purchase, DashboardStats } from '../types';
+
+export const mockUsers: User[] = [
+  {
+    id: '1',
+    name: 'Ahmad Rizki',
+    email: 'ahmad.rizki@student.unair.ac.id',
+    nim: '021234567',
+    asrama: 'Asrama Putra A',
+    room: 'A-101',
+    balance: 150000,
+    createdAt: '2024-01-15',
+    status: 'active',
+    totalPurchases: 5,
+  },
+  {
+    id: '2',
+    name: 'Siti Nurhaliza',
+    email: 'siti.nurhaliza@student.unair.ac.id',
+    nim: '021234568',
+    asrama: 'Asrama Putri B',
+    room: 'B-205',
+    balance: 300000,
+    createdAt: '2024-01-20',
+    status: 'active',
+    totalPurchases: 8,
+  },
+  {
+    id: '3',
+    name: 'Budi Santoso',
+    email: 'budi.santoso@student.unair.ac.id',
+    nim: '021234569',
+    asrama: 'Asrama Putra C',
+    room: 'C-301',
+    balance: 75000,
+    createdAt: '2024-02-01',
+    status: 'active',
+    totalPurchases: 3,
+  },
+];
+
+export const mockTokenPrices: TokenPrice[] = [
+  {
+    id: '1',
+    amount: 200000,
+    kwh: 120,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-01',
+    isActive: true,
+  },
+  {
+    id: '2',
+    amount: 100000,
+    kwh: 58,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-01',
+    isActive: true,
+  },
+  {
+    id: '3',
+    amount: 50000,
+    kwh: 27,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-01',
+    isActive: true,
+  },
+];
+
+export const mockPurchases: Purchase[] = [
+  {
+    id: '1',
+    userId: '1',
+    userName: 'Ahmad Rizki',
+    amount: 200000,
+    kwh: 120,
+    date: '2024-01-25',
+    status: 'completed',
+    tokenCode: '1234-5678-9012-3456',
+  },
+  {
+    id: '2',
+    userId: '2',
+    userName: 'Siti Nurhaliza',
+    amount: 100000,
+    kwh: 58,
+    date: '2024-01-26',
+    status: 'completed',
+    tokenCode: '2345-6789-0123-4567',
+  },
+  {
+    id: '3',
+    userId: '3',
+    userName: 'Budi Santoso',
+    amount: 50000,
+    kwh: 27,
+    date: '2024-01-27',
+    status: 'pending',
+    tokenCode: '3456-7890-1234-5678',
+  },
+];
+
+export const mockDashboardStats: DashboardStats = {
+  totalUsers: 156,
+  totalPurchases: 1240,
+  totalRevenue: 24800000,
+  totalKwh: 14880,
+  monthlyData: [
+    { month: 'Jan', purchases: 95, revenue: 1900000 },
+    { month: 'Feb', purchases: 120, revenue: 2400000 },
+    { month: 'Mar', purchases: 140, revenue: 2800000 },
+    { month: 'Apr', purchases: 110, revenue: 2200000 },
+    { month: 'May', purchases: 160, revenue: 3200000 },
+    { month: 'Jun', purchases: 180, revenue: 3600000 },
+    { month: 'Jul', purchases: 200, revenue: 4000000 },
+    { month: 'Aug', purchases: 155, revenue: 3100000 },
+    { month: 'Sep', purchases: 135, revenue: 2700000 },
+    { month: 'Oct', purchases: 145, revenue: 2900000 },
+  ],
+  dailyData: [
+    { day: 'Mon', purchases: 25, revenue: 500000 },
+    { day: 'Tue', purchases: 30, revenue: 600000 },
+    { day: 'Wed', purchases: 35, revenue: 700000 },
+    { day: 'Thu', purchases: 28, revenue: 560000 },
+    { day: 'Fri', purchases: 40, revenue: 800000 },
+    { day: 'Sat', purchases: 22, revenue: 440000 },
+    { day: 'Sun', purchases: 18, revenue: 360000 },
+  ],
+};
