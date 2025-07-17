@@ -1,9 +1,9 @@
 import React from 'react';
 import { Bell, Search, User } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth'; // Ini akan mengacu ke useAuth dari src/context/AuthContext.tsx
 
 const Header: React.FC = () => {
-  const { authState } = useAuth();
+  const { authState } = useAuth(); // Mengambil 'authState' dari useAuth()
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -26,15 +26,24 @@ const Header: React.FC = () => {
           </button>
           
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-white" />
-            </div>
+            {/* Kondisi untuk menampilkan Avatar atau Icon User */}
+            {authState.user?.avatar ? ( // Menggunakan authState.user?.avatar
+              <img
+                src={`/api/files/images/${authState.user.avatar}`} // Path ke gambar avatar
+                alt="User Avatar"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-white" />
+              </div>
+            )}
             <div>
               <p className="text-sm font-medium text-gray-800 dark:text-white">
-                {authState.user?.name}
+                {authState.user?.name} {/* Menggunakan authState.user?.name */}
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                {authState.user?.role}
+                {authState.user?.role} {/* Menggunakan authState.user?.role */}
               </p>
             </div>
           </div>

@@ -1,3 +1,6 @@
+// src/types.ts
+
+// Tipe data untuk user biasa
 export interface User {
   id: string;
   name: string;
@@ -11,16 +14,20 @@ export interface User {
   totalPurchases: number;
 }
 
+// Tipe data untuk Admin & Operator (sudah diperbarui)
 export interface Admin {
-  id: string;
+  id: number; // ID dari backend adalah number
   name: string;
   email: string;
+  avatar?: string; // <-- DITAMBAHKAN: URL untuk foto profil (opsional)
   role: 'admin' | 'operator';
   createdAt: string;
-  lastLogin: string;
+  lastLogin?: string | null;
   status: 'active' | 'inactive';
+  updatedAt: string;
 }
 
+// Tipe data untuk harga token
 export interface TokenPrice {
   id: string;
   amount: number;
@@ -30,6 +37,7 @@ export interface TokenPrice {
   isActive: boolean;
 }
 
+// Tipe data untuk riwayat pembelian
 export interface Purchase {
   id: string;
   userId: string;
@@ -41,6 +49,7 @@ export interface Purchase {
   tokenCode: string;
 }
 
+// Tipe data untuk statistik dashboard
 export interface DashboardStats {
   totalUsers: number;
   totalPurchases: number;
@@ -50,6 +59,13 @@ export interface DashboardStats {
   dailyData: { day: string; purchases: number; revenue: number }[];
 }
 
+// Tipe data untuk kredensial login
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+// Tipe data untuk state autentikasi
 export interface AuthState {
   isLoggedIn: boolean;
   user: Admin | null;

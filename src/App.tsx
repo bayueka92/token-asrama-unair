@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+// src/App.tsx
+
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './hooks/useTheme';
 import LoginForm from './components/Login/LoginForm';
@@ -12,26 +14,9 @@ import PurchaseHistory from './components/Purchases/PurchaseHistory';
 import AdminManagement from './components/Admins/AdminManagement';
 import Settings from './components/Settings/Settings';
 
-function App() {
-  const { authState, setAuthFromToken } = useAuth();
+// Komponen Layout untuk halaman setelah login
+const DashboardLayout = () => {
   const { theme } = useTheme();
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      setAuthFromToken(token);
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-  }, [setAuthFromToken]);
-
-  if (!authState.isLoggedIn) {
-    return <LoginForm />;
-  }
-
-  // Layout untuk halaman setelah login
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -47,12 +32,43 @@ function App() {
               <Route path="/purchases" element={<PurchaseHistory />} />
               <Route path="/admins" element={<AdminManagement />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<div>404 Not Found</div>} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>
       </div>
     </div>
+  );
+};
+
+// Komponen untuk melindungi rute
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { authState } = useAuth();
+  // ===================================================================
+  // == PERBAIKAN UTAMA ADA DI SINI ==
+  // `authState` tidak memiliki properti `isAuthenticated`.
+  // Kondisi diubah untuk memeriksa keberadaan `authState.token`.
+  // Jika token ada (bukan null), maka pengguna dianggap sudah login.
+  // ===================================================================
+  return authState.token ? children : <Navigate to="/login" />;
+};
+
+function App() {
+  return (
+    <Routes>
+      {/* Rute untuk login, bisa diakses siapa saja */}
+      <Route path="/login" element={<LoginForm />} />
+
+      {/* Semua rute lain akan dilindungi oleh ProtectedRoute */}
+      <Route 
+        path="/*" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        } 
+      />
+    </Routes>
   );
 }
 
