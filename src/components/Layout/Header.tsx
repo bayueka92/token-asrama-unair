@@ -1,11 +1,9 @@
-// src/components/Layout/Header.tsx
 import React from 'react';
 import { Bell, Search, User } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-// Definisikan API_HOST di sini atau impor dari config/constants
-const API_HOST = import.meta.env.VITE_API_HOST; // Pastikan ini sesuai dengan URL backend Anda
 
+const API_HOST = import.meta.env.VITE_API_HOST;
 const Header: React.FC = () => {
   const { authState } = useAuth();
 
@@ -32,7 +30,6 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-3">
             {authState.user?.avatar ? ( 
               <img
-                // GANTI BARIS INI: Tambahkan API_HOST di depan
                 src={`${API_HOST}${authState.user.avatar}`} 
                 alt="User Avatar"
                 className="w-8 h-8 rounded-full object-cover"

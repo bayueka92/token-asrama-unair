@@ -240,7 +240,7 @@ const AdminManagement: React.FC = () => {
                             onClick={() => handleDeleteClick(admin.id)}
                             disabled={!currentUserIsAdmin || isSelf}
                             className="p-1 text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-                            title="Hapus"
+                            title={isSelf ? "Tidak bisa menghapus diri sendiri" : "Hapus"}
                           >
                             <Trash2 size={18} />
                           </button>
@@ -252,7 +252,7 @@ const AdminManagement: React.FC = () => {
                                 ? 'text-gray-500 hover:text-gray-700'
                                 : 'text-green-500 hover:text-green-700'
                             } disabled:text-gray-400 disabled:cursor-not-allowed`}
-                            title={admin.status === 'active' ? 'Nonaktifkan' : 'Aktifkan'}
+                            title={isSelf ? "Tidak bisa menonaktifkan diri sendiri" : (admin.status === 'active' ? 'Nonaktifkan' : 'Aktifkan')}
                           >
                             {admin.status === 'active' ? (
                               <PowerOff size={18} />

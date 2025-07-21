@@ -1,3 +1,5 @@
+// src/context/AuthContext.tsx
+
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import apiClient from '../services/apiClient'; 
@@ -21,6 +23,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
+interface CustomDecodedToken extends DecodedToken {
+  id: number | string;
+}
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -29,20 +34,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     token: null,
     user: null,
   });
-
+  
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
-        const decoded = jwtDecode<DecodedToken>(token);
+        const decoded = jwtDecode<CustomDecodedToken>(token);
+        if (!decoded.id) {
+          console.error("TOKEN TIDAK VALID: Klaim 'id' tidak ditemukan di dalam token. Sesi dibersihkan.");
+          localStorage.removeItem('authToken');
+          return;
+        }
+
         if (decoded.exp && decoded.exp * 1000 < Date.now()) {
           localStorage.removeItem('authToken');
-          setAuthState({ token: null, user: null });
         } else {
           const user: AuthUser = {
-            id: decoded.sub,
+            id: String(decoded.id), 
             name: decoded.name,
             email: decoded.email,
             role: decoded.role,
@@ -54,19 +64,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("Gagal decode token dari localStorage:", error);
         localStorage.removeItem('authToken');
-        setAuthState({ token: null, user: null });
       }
     }
-  }, [navigate]);
+  }, []);
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const res = await apiClient.post('/login', { email, password });
       const token = res.data.token;
       
-      const decoded = jwtDecode<DecodedToken>(token);
+      const decoded = jwtDecode<CustomDecodedToken>(token);
+
+      if (!decoded.id) {
+        console.error("LOGIN GAGAL: Token yang diterima dari server tidak memiliki klaim 'id'.");
+        throw new Error("Token dari server tidak valid.");
+      }
 
       const user: AuthUser = {
-        id: decoded.sub,
+        id: String(decoded.id),
         name: decoded.name,
         email: decoded.email,
         role: decoded.role,
@@ -76,19 +91,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       localStorage.setItem('authToken', token);
       setAuthState({ token, user });
-
-      navigate('/dashboard');
+      
+      navigate('/dashboard'); 
       return true;
     } catch (err) {
       console.error('Login failed:', err);
-      return false;
+      throw err;
     }
   };
 
   const logout = () => {
     localStorage.removeItem('authToken');
     setAuthState({ token: null, user: null });
-    navigate('/login');
+    navigate('/login'); 
   };
 
   return (

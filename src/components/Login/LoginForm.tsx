@@ -1,13 +1,9 @@
-// src/components/Login/LoginForm.tsx
-
 import React, { useState, useEffect } from 'react';
 import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth'; // Pastikan path ini benar!
+import { useAuth } from '../../hooks/useAuth'; 
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-// HAPUS import ini karena AuthContext yang akan menangani panggilan API
-// import * as authService from '../../services/authService'; 
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,60 +12,33 @@ const LoginForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login, authState } = useAuth(); // Ambil fungsi login dan authState dari context
+  const { login, authState } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Jika sudah ada token (berarti sudah login), langsung arahkan ke dashboard
     if (authState.token) {
       navigate('/dashboard');
     }
   }, [authState.token, navigate]);
-
-  useEffect(() => {
-    // Logika untuk menangani token dari URL (misal: setelah login Google)
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-      // PERHATIAN: Jika Google Login Anda mengembalikan token ke URL,
-      // Anda perlu fungsi *lain* di AuthContext untuk menerima token ini dan memprosesnya.
-      // Fungsi `login` yang ada sekarang hanya untuk login email/password.
-      // Jika tidak ada skenario Google Login, Anda bisa hapus useEffect ini.
-      // Untuk sementara, kita biarkan saja, tapi pastikan alur Google Login Anda jelas.
-      console.warn("Menerima token dari URL. Anda mungkin perlu fungsi `loginWithToken` di AuthContext.");
-      window.history.replaceState(null, '', window.location.pathname); 
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      // Panggil fungsi `login` dari AuthContext dengan email dan password.
-      // Fungsi ini akan melakukan panggilan API ke backend.
-      const success = await login(email, password); 
-
-      if (!success) {
-        // Jika fungsi login di AuthContext mengembalikan false (gagal),
-        // maka tampilkan pesan error.
-        setError('Email atau password yang Anda masukkan salah.');
-      }
-      // Jika success, navigasi sudah ditangani oleh AuthContext
-      // navigate('/dashboard'); // <-- Ini sudah ada di AuthContext, jadi bisa dihilangkan di sini
+      await login(email, password); 
     } catch (err) {
-      // Ini adalah catch-all jika ada error yang tidak tertangkap oleh AuthContext
-      // Misalnya, masalah koneksi atau error Axios yang tidak ditangani di AuthContext.
       if (axios.isAxiosError(err) && err.response) {
-        const errorCode = err.response.data.error_code;
+        const errorCode = err.response.data.error_code; 
+        
         if (errorCode === 'account_inactive') {
           Swal.fire({
-            icon: 'error', title: 'Login Gagal',
-            text: 'Akun Anda telah dinonaktifkan. Silahkan hubungi administrator.',
+            icon: 'error',
+            title: 'Login Gagal',
+            text: 'Akun Anda telah dinonaktifkan. Silahkan hubungi administrator utama.',
           });
         } else {
-          // Pesan error umum jika tidak ada kode error spesifik
-          setError('Terjadi kesalahan saat login. Coba lagi.');
+          setError('Email atau password yang Anda masukkan salah.');
         }
       } else {
         setError('Terjadi kesalahan pada server. Coba lagi beberapa saat.');
