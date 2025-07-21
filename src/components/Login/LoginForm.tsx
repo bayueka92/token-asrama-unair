@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth'; // Pastikan path ini benar!
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import * as authService from '../../services/authService'; // <-- IMPORT SERVICE BARU
+// HAPUS import ini karena AuthContext yang akan menangani panggilan API
+// import * as authService from '../../services/authService'; 
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,18 +16,11 @@ const LoginForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // ===================================================================
-  // == PERBAIKAN 1: Sesuaikan dengan AuthContext ==
-  // Hanya butuh 'login' dan 'authState'
-  // ===================================================================
-  const { login, authState } = useAuth();
+  const { login, authState } = useAuth(); // Ambil fungsi login dan authState dari context
   const navigate = useNavigate();
 
   useEffect(() => {
-    // ===================================================================
-    // == PERBAIKAN 2: Gunakan 'authState.token' untuk memeriksa login ==
-    // ===================================================================
-    // Jika sudah ada token, langsung arahkan ke dashboard
+    // Jika sudah ada token (berarti sudah login), langsung arahkan ke dashboard
     if (authState.token) {
       navigate('/dashboard');
     }
@@ -37,31 +31,35 @@ const LoginForm: React.FC = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     if (token) {
-      // ===================================================================
-      // == PERBAIKAN 3: Gunakan fungsi 'login' yang sudah ada ==
-      // ===================================================================
-      login(token); 
-      // Hapus token dari URL agar tidak terlihat
-      window.history.replaceState(null, '', window.location.pathname);
+      // PERHATIAN: Jika Google Login Anda mengembalikan token ke URL,
+      // Anda perlu fungsi *lain* di AuthContext untuk menerima token ini dan memprosesnya.
+      // Fungsi `login` yang ada sekarang hanya untuk login email/password.
+      // Jika tidak ada skenario Google Login, Anda bisa hapus useEffect ini.
+      // Untuk sementara, kita biarkan saja, tapi pastikan alur Google Login Anda jelas.
+      console.warn("Menerima token dari URL. Anda mungkin perlu fungsi `loginWithToken` di AuthContext.");
+      window.history.replaceState(null, '', window.location.pathname); 
     }
-  }, [login]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      // ===================================================================
-      // == PERBAIKAN 4 (UTAMA): Logika login yang benar ==
-      // 1. Panggil service untuk mendapatkan token dari API.
-      // 2. Jika berhasil, teruskan token ke fungsi login() dari context.
-      // ===================================================================
-      const response = await authService.login({ email, password });
-      login(response.token); // <-- Teruskan HANYA token (string)
-      
-      navigate('/dashboard');
+      // Panggil fungsi `login` dari AuthContext dengan email dan password.
+      // Fungsi ini akan melakukan panggilan API ke backend.
+      const success = await login(email, password); 
 
+      if (!success) {
+        // Jika fungsi login di AuthContext mengembalikan false (gagal),
+        // maka tampilkan pesan error.
+        setError('Email atau password yang Anda masukkan salah.');
+      }
+      // Jika success, navigasi sudah ditangani oleh AuthContext
+      // navigate('/dashboard'); // <-- Ini sudah ada di AuthContext, jadi bisa dihilangkan di sini
     } catch (err) {
+      // Ini adalah catch-all jika ada error yang tidak tertangkap oleh AuthContext
+      // Misalnya, masalah koneksi atau error Axios yang tidak ditangani di AuthContext.
       if (axios.isAxiosError(err) && err.response) {
         const errorCode = err.response.data.error_code;
         if (errorCode === 'account_inactive') {
@@ -70,7 +68,8 @@ const LoginForm: React.FC = () => {
             text: 'Akun Anda telah dinonaktifkan. Silahkan hubungi administrator.',
           });
         } else {
-          setError('Email atau password yang Anda masukkan salah.');
+          // Pesan error umum jika tidak ada kode error spesifik
+          setError('Terjadi kesalahan saat login. Coba lagi.');
         }
       } else {
         setError('Terjadi kesalahan pada server. Coba lagi beberapa saat.');
@@ -79,10 +78,6 @@ const LoginForm: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // const handleGoogleLogin = () => {
-  //   window.location.href = 'http://localhost:3001/auth/google';
-  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">

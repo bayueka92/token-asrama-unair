@@ -1,25 +1,13 @@
-// src/components/Admins/AdminManagement.tsx
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, Edit, Trash2, Shield, User, Power, PowerOff, UploadCloud } from 'lucide-react';
 import { Admin } from '../../types';
 import * as adminService from '../../services/adminService';
 import * as uploadService from '../../services/uploadService';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../hooks/useAuth';
 
-// ===================================================================
-// == PERUBAHAN KRUSIAL: Pastikan Impor Ini Benar ==
-// Ini adalah penyebab paling umum dari masalah Anda. Pastikan Anda
-// mengimpor `useAuth` dari file context yang benar, yaitu
-// `../../context/AuthContext`, dan BUKAN dari file lama seperti
-// `../../hooks/useAuth`.
-// ===================================================================
-import { useAuth } from '../../context/AuthContext';
+const API_HOST = import.meta.env.VITE_API_HOST;
 
-// URL dasar backend Anda untuk menampilkan gambar
-const API_HOST = 'http://localhost:3001';
-
-// Komponen Badge (Tidak ada perubahan)
 const StatusBadge = ({ status }: { status: 'active' | 'inactive' }) => (
   <span
     className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -58,36 +46,20 @@ const AdminManagement: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  // ===================================================================
-  // == PEMANGGILAN KONTEKS ==
-  // Ini mengambil state otentikasi. Jika `useAuth` diimpor dari
-  // file yang salah, `authState.user` akan selalu null, dan
-  // semua panggilan API yang memerlukan otorisasi akan gagal.
-  // ===================================================================
   const { authState } = useAuth();
   const currentUserIsAdmin = authState.user?.role === 'admin';
 
   const loadAdmins = useCallback(async () => {
     try {
-      // ===================================================================
-      // == PEMANGGILAN SERVICE ==
-      // Panggilan ini bergantung pada `adminService.ts` yang harus
-      // menggunakan `apiClient` terpusat untuk menambahkan token otentikasi.
-      // Jika tidak, server akan menolak permintaan ini (error 401 atau 403).
-      // ===================================================================
       const data = await adminService.fetchAdmins();
       setAdmins(data);
     } catch (err) {
-      // Jika Anda melihat pesan error ini, buka konsol browser Anda (di tab Network)
-      // untuk melihat detail error dari server (misalnya 401, 403, 500).
       Swal.fire('Error', 'Gagal memuat data admin. Periksa konsol untuk detail.', 'error');
       console.error("Gagal memuat admin:", err);
     }
   }, []);
 
   useEffect(() => {
-    // Memuat data saat komponen pertama kali ditampilkan
     loadAdmins();
   }, [loadAdmins]);
 
@@ -163,6 +135,7 @@ const AdminManagement: React.FC = () => {
           await loadAdmins();
           Swal.fire('Terhapus!', 'User berhasil dihapus.', 'success');
         } catch (err) {
+          console.error("Gagal menghapus user:", err);
           Swal.fire('Error', 'Gagal menghapus user.', 'error');
         }
       }
@@ -184,6 +157,7 @@ const AdminManagement: React.FC = () => {
           await loadAdmins();
           Swal.fire('Sukses!', 'Status user berhasil diubah.', 'success');
         } catch (err) {
+          console.error("Gagal mengubah status user:", err);
           Swal.fire('Error', 'Gagal mengubah status user.', 'error');
         }
       }
@@ -220,7 +194,7 @@ const AdminManagement: React.FC = () => {
               </thead>
               <tbody className="divide-y">
                 {admins.map((admin) => {
-                  const isSelf = authState.user?.id === admin.id;
+                  const isSelf = authState.user?.id === String(admin.id);
                   return (
                     <tr key={admin.id} className="hover:bg-gray-50">
                       <td className="p-4">

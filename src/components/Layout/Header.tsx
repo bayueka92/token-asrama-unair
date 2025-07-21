@@ -1,9 +1,13 @@
+// src/components/Layout/Header.tsx
 import React from 'react';
 import { Bell, Search, User } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth'; // Ini akan mengacu ke useAuth dari src/context/AuthContext.tsx
+import { useAuth } from '../../hooks/useAuth';
+
+// Definisikan API_HOST di sini atau impor dari config/constants
+const API_HOST = import.meta.env.VITE_API_HOST; // Pastikan ini sesuai dengan URL backend Anda
 
 const Header: React.FC = () => {
-  const { authState } = useAuth(); // Mengambil 'authState' dari useAuth()
+  const { authState } = useAuth();
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -18,18 +22,18 @@ const Header: React.FC = () => {
             />
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
           </button>
-          
+
           <div className="flex items-center space-x-3">
-            {/* Kondisi untuk menampilkan Avatar atau Icon User */}
-            {authState.user?.avatar ? ( // Menggunakan authState.user?.avatar
+            {authState.user?.avatar ? ( 
               <img
-                src={`/api/files/images/${authState.user.avatar}`} // Path ke gambar avatar
+                // GANTI BARIS INI: Tambahkan API_HOST di depan
+                src={`${API_HOST}${authState.user.avatar}`} 
                 alt="User Avatar"
                 className="w-8 h-8 rounded-full object-cover"
               />
@@ -40,10 +44,10 @@ const Header: React.FC = () => {
             )}
             <div>
               <p className="text-sm font-medium text-gray-800 dark:text-white">
-                {authState.user?.name} {/* Menggunakan authState.user?.name */}
+                {authState.user?.name || 'Guest'}
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                {authState.user?.role} {/* Menggunakan authState.user?.role */}
+                {authState.user?.role || 'Pengguna'}
               </p>
             </div>
           </div>

@@ -1,29 +1,28 @@
-// src/context/AuthContext.tsx
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import apiClient from '../services/apiClient'; 
+import { useNavigate } from 'react-router-dom';
+import { DecodedToken } from '../types';
 
-// Definisikan struktur data user yang kita dapat dari token
 interface AuthUser {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  role: 'admin' | 'operator';
+  role: 'admin' | 'operator' | 'user';
   avatar?: string;
   exp?: number;
 }
 
-// Definisikan apa saja yang akan disediakan oleh context
 interface AuthContextType {
   authState: {
     token: string | null;
     user: AuthUser | null;
   };
-  login: (token: string) => void;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authState, setAuthState] = useState<{ token: string | null; user: AuthUser | null }>({
@@ -31,50 +30,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user: null,
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
-        const decodedUser: AuthUser = jwtDecode(token);
-        if (decodedUser.exp && decodedUser.exp * 1000 < Date.now()) {
+        const decoded = jwtDecode<DecodedToken>(token);
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
           localStorage.removeItem('authToken');
           setAuthState({ token: null, user: null });
         } else {
-          setAuthState({ token, user: decodedUser });
+          const user: AuthUser = {
+            id: decoded.sub,
+            name: decoded.name,
+            email: decoded.email,
+            role: decoded.role,
+            avatar: decoded.avatar || undefined,
+            exp: decoded.exp,
+          };
+          setAuthState({ token, user });
         }
       } catch (error) {
+        console.error("Gagal decode token dari localStorage:", error);
         localStorage.removeItem('authToken');
         setAuthState({ token: null, user: null });
       }
     }
-  }, []);
-
-  const login = (token: string) => {
-    if (typeof token !== 'string' || !token) {
-      console.error("Gagal login: Fungsi login menerima nilai yang bukan string.");
-      return;
-    }
+  }, [navigate]);
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const decodedUser: AuthUser = jwtDecode(token);
+      const res = await apiClient.post('/login', { email, password });
+      const token = res.data.token;
+      
+      const decoded = jwtDecode<DecodedToken>(token);
+
+      const user: AuthUser = {
+        id: decoded.sub,
+        name: decoded.name,
+        email: decoded.email,
+        role: decoded.role,
+        avatar: decoded.avatar || undefined,
+        exp: decoded.exp,
+      };
+
       localStorage.setItem('authToken', token);
-      setAuthState({ token, user: decodedUser });
-    } catch (error) {
-      console.error("Gagal decode token saat login:", error);
+      setAuthState({ token, user });
+
+      navigate('/dashboard');
+      return true;
+    } catch (err) {
+      console.error('Login failed:', err);
+      return false;
     }
   };
 
-  // ===================================================================
-  // == PERBAIKAN UTAMA ADA DI SINI ==
-  // Fungsi logout sekarang melakukan tiga hal penting:
-  // 1. Menghapus token dari localStorage.
-  // 2. Mengatur state aplikasi menjadi tidak terotentikasi.
-  // 3. Memaksa refresh halaman ke rute /login, yang akan membersihkan
-  //    semua state lama dan mencegah redirect kembali ke dashboard.
-  // ===================================================================
   const logout = () => {
     localStorage.removeItem('authToken');
     setAuthState({ token: null, user: null });
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
@@ -82,12 +96,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth harus digunakan di dalam AuthProvider');
-  }
-  return context;
 };

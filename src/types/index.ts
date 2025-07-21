@@ -1,6 +1,3 @@
-// src/types.ts
-
-// Tipe data untuk user biasa
 export interface User {
   id: string;
   name: string;
@@ -13,21 +10,17 @@ export interface User {
   status: 'active' | 'inactive';
   totalPurchases: number;
 }
-
-// Tipe data untuk Admin & Operator (sudah diperbarui)
 export interface Admin {
-  id: number; // ID dari backend adalah number
+  id: number;
   name: string;
   email: string;
-  avatar?: string; // <-- DITAMBAHKAN: URL untuk foto profil (opsional)
+  avatar?: string;
   role: 'admin' | 'operator';
   createdAt: string;
   lastLogin?: string | null;
   status: 'active' | 'inactive';
   updatedAt: string;
 }
-
-// Tipe data untuk harga token
 export interface TokenPrice {
   id: string;
   amount: number;
@@ -36,8 +29,6 @@ export interface TokenPrice {
   updatedAt: string;
   isActive: boolean;
 }
-
-// Tipe data untuk riwayat pembelian
 export interface Purchase {
   id: string;
   userId: string;
@@ -48,8 +39,6 @@ export interface Purchase {
   status: 'completed' | 'pending' | 'failed';
   tokenCode: string;
 }
-
-// Tipe data untuk statistik dashboard
 export interface DashboardStats {
   totalUsers: number;
   totalPurchases: number;
@@ -58,16 +47,24 @@ export interface DashboardStats {
   monthlyData: { month: string; purchases: number; revenue: number }[];
   dailyData: { day: string; purchases: number; revenue: number }[];
 }
-
-// Tipe data untuk kredensial login
 export interface LoginCredentials {
   email: string;
   password: string;
 }
-
-// Tipe data untuk state autentikasi
 export interface AuthState {
   isLoggedIn: boolean;
   user: Admin | null;
   token: string | null;
+}
+export interface AuthResponse {
+  token: string;
+}
+export interface DecodedToken {
+  sub: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'operator' | 'user';
+  avatar?: string;
+  exp: number;
+  iat: number;
 }
