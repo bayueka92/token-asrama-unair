@@ -8,7 +8,8 @@ import {
   Shield,
   LogOut,
   Moon,
-  Sun
+  Sun,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -20,6 +21,7 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { id: 'data_master', label: 'Data Master', icon: Database, path: '/master_data' },
     { id: 'users', label: 'Kelola User', icon: Users, path: '/users' },
     { id: 'tokens', label: 'Harga Token', icon: DollarSign, path: '/tokens' },
     { id: 'purchases', label: 'Pembelian', icon: BarChart3, path: '/purchases' },
